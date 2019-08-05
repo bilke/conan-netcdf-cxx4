@@ -1,5 +1,5 @@
 from conans import ConanFile, CMake, tools
-
+from conans.errors import ConanInvalidConfiguration
 
 class NetcdfcConan(ConanFile):
     name = "netcdf-cxx"
@@ -26,15 +26,22 @@ conan_basic_setup()''')
     def requirements(self):
         self.requires("netcdf-c/4.6.2@bilke/testing")
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
+    def configure(self):
+        del self.settings.compiler.libcxx
+        del self.settings.compiler.cppstd
+        if self.settings.os == "Windows" and self.options.shared:
+            raise ConanInvalidConfiguration("Windows shared builds are not supported right now")
+
     def configure_cmake(self):
         cmake = CMake(self)
         cmake.definitions["NCXX_ENABLE_TESTS"] = False
         cmake.definitions["ENABLE_CONVERSION_WARNINGS"] = False
         cmake.configure(source_folder="netcdf-cxx4")
         return cmake
-
-    def configure(self):
-        del self.settings.compiler.libcxx
 
     def build(self):
         cmake = self.configure_cmake()
