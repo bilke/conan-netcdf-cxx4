@@ -9,8 +9,8 @@ class NetcdfcConan(ConanFile):
     url = "https://github.com/bilke/conan-netcdf-cxx"
     description = "Unidata network Common Data Form cxx"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    # options = {"shared": [True, False], "fPIC": [True, False]}
+    # default_options = "shared=False", "fPIC=True"
     generators = "cmake"
 
     def source(self):
@@ -26,20 +26,21 @@ conan_basic_setup()''')
     def requirements(self):
         self.requires("netcdf-c/4.6.2@bilke/testing")
 
-    def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
+    # def config_options(self):
+        # if self.settings.os == "Windows":
+            # del self.options.fPIC
 
     def configure(self):
         del self.settings.compiler.libcxx
         del self.settings.compiler.cppstd
-        if self.settings.os == "Windows" and self.options.shared:
-            raise ConanInvalidConfiguration("Windows shared builds are not supported right now")
+        # if self.settings.os == "Windows" and self.options.shared:
+            # raise ConanInvalidConfiguration("Windows shared builds are not supported right now")
 
     def configure_cmake(self):
         cmake = CMake(self)
         cmake.definitions["NCXX_ENABLE_TESTS"] = False
         cmake.definitions["ENABLE_CONVERSION_WARNINGS"] = False
+        cmake.definitions["BUILD_SHARED_LIBS"] = False
         cmake.configure(source_folder="netcdf-cxx4")
         return cmake
 
