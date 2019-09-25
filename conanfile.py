@@ -12,9 +12,14 @@ class NetcdfcConan(ConanFile):
     # options = {"shared": [True, False], "fPIC": [True, False]}
     # default_options = "shared=False", "fPIC=True"
     generators = "cmake"
+    scm = {
+        "type": "git",
+        "subfolder": "netcdf-cxx4",
+        "url": "https://github.com/bilke/netcdf-cxx4.git",
+        "revision": "fix-release-build"
+     }
 
     def source(self):
-        self.run("git clone --depth=1 https://github.com/Unidata/netcdf-cxx4.git")
         # This small hack might be useful to guarantee proper /MT /MD linkage
         # in MSVC if the packaged project doesn't have variables to set it
         # properly
