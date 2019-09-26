@@ -1,4 +1,4 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, CMake, tools, AutoToolsBuildEnvironment
 from conans.errors import ConanInvalidConfiguration
 
 class NetcdfcConan(ConanFile):
@@ -14,7 +14,7 @@ class NetcdfcConan(ConanFile):
     generators = "cmake"
     scm = {
         "type": "git",
-        "subfolder": "netcdf-cxx4",
+        # "subfolder": "netcdf-cxx4",
         "url": "https://github.com/bilke/netcdf-cxx4.git",
         "revision": "fix-release-build"
      }
@@ -23,7 +23,7 @@ class NetcdfcConan(ConanFile):
         # This small hack might be useful to guarantee proper /MT /MD linkage
         # in MSVC if the packaged project doesn't have variables to set it
         # properly
-        tools.replace_in_file("netcdf-cxx4/CMakeLists.txt", "PROJECT(NCXX C CXX)",
+        tools.replace_in_file("CMakeLists.txt", "PROJECT(NCXX C CXX)",
                               '''PROJECT(NCXX C CXX)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
@@ -41,21 +41,12 @@ conan_basic_setup()''')
         # if self.settings.os == "Windows" and self.options.shared:
             # raise ConanInvalidConfiguration("Windows shared builds are not supported right now")
 
-    def configure_cmake(self):
-        cmake = CMake(self)
-        cmake.definitions["NCXX_ENABLE_TESTS"] = False
-        cmake.definitions["ENABLE_CONVERSION_WARNINGS"] = False
-        cmake.definitions["BUILD_SHARED_LIBS"] = False
-        cmake.configure(source_folder="netcdf-cxx4")
-        return cmake
-
     def build(self):
-        cmake = self.configure_cmake()
-        cmake.build()
-
-    def package(self):
-        cmake = self.configure_cmake()
-        cmake.install()
+        self.run('autoreconf -if')
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure()
+        autotools.make()
+        autotools.install()
 
     def package_info(self):
         self.cpp_info.libs = ["netcdf-cxx4"]
