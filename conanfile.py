@@ -23,6 +23,16 @@ class NetcdfcConan(ConanFile):
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
 
+        # Fix usage of custom FindHDF5.cmake in hdf5 package
+        # Also: Fix NO_MODULES to NO_MODULE, removed link type
+        tools.replace_in_file("netcdf-cxx4/CMakeLists.txt",
+            "FIND_PACKAGE(HDF5 NAMES ${SEARCH_PACKAGE_NAME} COMPONENTS C HL NO_MODULES REQUIRED ${NC_HDF5_LINK_TYPE})",
+            '''set(HDF5_DIR ${CONAN_HDF5_ROOT}/cmake/hdf5)
+      FIND_PACKAGE(HDF5 REQUIRED COMPONENTS C HL NO_MODULE)''')
+        tools.replace_in_file("netcdf-cxx4/CMakeLists.txt",
+            "CHECK_LIBRARY_EXISTS(${HDF5_C_LIBRARY_hdf5} H5free_memory \"\" HAVE_H5FREE_MEMORY)",
+            "")
+
     def requirements(self):
         self.requires("netcdf-c/4.6.2@bilke/testing")
 
