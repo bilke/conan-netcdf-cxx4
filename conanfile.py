@@ -3,7 +3,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class NetcdfcConan(ConanFile):
     name = "netcdf-cxx"
-    version = "4.3.1"
+    version = "4.3.1-2"
     license = "MIT"
     author = "Lars Bilke, lars.bilke@ufz.de"
     url = "https://github.com/bilke/conan-netcdf-cxx"
@@ -29,12 +29,9 @@ conan_basic_setup()''')
             "FIND_PACKAGE(HDF5 NAMES ${SEARCH_PACKAGE_NAME} COMPONENTS C HL NO_MODULES REQUIRED ${NC_HDF5_LINK_TYPE})",
             '''set(HDF5_DIR ${CONAN_HDF5_ROOT}/cmake/hdf5)
       FIND_PACKAGE(HDF5 REQUIRED COMPONENTS C HL NO_MODULE)''')
-        tools.replace_in_file("netcdf-cxx4/CMakeLists.txt",
-            "CHECK_LIBRARY_EXISTS(${HDF5_C_LIBRARY_hdf5} H5free_memory \"\" HAVE_H5FREE_MEMORY)",
-            "")
 
     def requirements(self):
-        self.requires("netcdf-c/4.6.2@bilke/testing")
+        self.requires("netcdf/4.7.4")
 
     # def config_options(self):
         # if self.settings.os == "Windows":
