@@ -3,7 +3,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class NetcdfcConan(ConanFile):
     name = "netcdf-cxx"
-    version = "4.3.1-2"
+    version = "4.3.1-3"
     license = "MIT"
     author = "Lars Bilke, lars.bilke@ufz.de"
     url = "https://github.com/bilke/conan-netcdf-cxx"
@@ -12,6 +12,7 @@ class NetcdfcConan(ConanFile):
     # options = {"shared": [True, False], "fPIC": [True, False]}
     # default_options = "shared=False", "fPIC=True"
     generators = "cmake"
+    exports = ["SetHDF5.cmake"]
 
     def source(self):
         self.run("git clone --depth=1 https://github.com/Unidata/netcdf-cxx4.git")
@@ -24,11 +25,16 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
 
         # Fix usage of custom FindHDF5.cmake in hdf5 package
-        # Also: Fix NO_MODULES to NO_MODULE, removed link type
+        replace_find_str = '''set(HDF5_DIR ${CONAN_HDF5_ROOT}/cmake/hdf5)
+                              FIND_PACKAGE(HDF5 REQUIRED COMPONENTS C HL NO_MODULE)'''
+        if self.settings.os == "Windows":
+            replace_find_str = '''list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+                                  include(${CMAKE_CURRENT_SOURCE_DIR}/../SetHDF5.cmake)
+                                  FIND_PACKAGE(HDF5)'''
+
         tools.replace_in_file("netcdf-cxx4/CMakeLists.txt",
             "FIND_PACKAGE(HDF5 NAMES ${SEARCH_PACKAGE_NAME} COMPONENTS C HL NO_MODULES REQUIRED ${NC_HDF5_LINK_TYPE})",
-            '''set(HDF5_DIR ${CONAN_HDF5_ROOT}/cmake/hdf5)
-      FIND_PACKAGE(HDF5 REQUIRED COMPONENTS C HL NO_MODULE)''')
+            replace_find_str)
 
     def requirements(self):
         self.requires("netcdf/4.7.4")
